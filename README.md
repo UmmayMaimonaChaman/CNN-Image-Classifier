@@ -13,7 +13,7 @@ This project is a **passion + skill fusion**, created during leisure time as a b
   👉 https://github.com/UmmayMaimonaChaman/CNN-Image-Classifier  
 
 - **Live Preview (Web App)**  
-  👉 _[Add your deployed link here — e.g. GitHub Pages / Netlify / Vercel]_
+  👉 https://ummaymaimonachaman.github.io/CNN-Image-Classifier/
 
 ---
 
@@ -143,4 +143,5 @@ Created by **Ummay Maimona Chaman**
 ---
 
 🚀 *Learning Deep Learning doesn’t always have to be serious — sometimes, it just needs to be interactive.*
+
 
