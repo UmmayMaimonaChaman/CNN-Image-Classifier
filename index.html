@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Vision</title>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="app-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="brand">
+                <i data-lucide="brain-circuit"></i>
+                <span>CNN Vision</span>
+            </div>
+
+            <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="classify" onclick="app.switchTab('classify')">
+                    <i data-lucide="scan"></i> Classify
+                </div>
+                <!-- Adding 'Train' tab as requested for dataset training -->
+                <div class="nav-tab" data-tab="train" onclick="app.switchTab('train')">
+                    <i data-lucide="dumbbell"></i> Train
+                </div>
+                <div class="nav-tab" data-tab="batch" onclick="app.switchTab('batch')">
+                    <i data-lucide="layers"></i> Batch Mode
+                </div>
+                <div class="nav-tab" data-tab="layers" onclick="app.switchTab('layers')">
+                    <i data-lucide="activity"></i> Explain
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content-area">
+
+            <div class="privacy-banner">
+                <i data-lucide="shield-check" style="color: var(--success);"></i>
+                <span><strong>Privacy First:</strong> All processing happens in your browser. No images are uploaded or
+                    stored.</span>
+            </div>
+
+            <!-- View: Classify (Single Image) -->
+            <div id="view-classify">
+                <h2 class="section-title">
+                    <i data-lucide="image"></i> Single Classification
+                    <span
+                        style="font-size: 0.75rem; background: var(--success); color: white; padding: 2px 8px; border-radius: 99px; margin-left: auto;">MobileNet
+                        v2 Active</span>
+                </h2>
+
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <div class="batch-upload-container" id="singleDropZone">
+                            <i data-lucide="upload-cloud"
+                                style="width: 48px; height: 48px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                            <h3>Upload Image</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Drag & drop or click to browse
+                            </p>
+                            <div style="display: flex; gap: 1rem; justify-content: center;">
+                                <button class="btn btn-primary"
+                                    onclick="document.getElementById('singleInput').click()">Select Image</button>
+                                <button class="btn btn-secondary" onclick="app.toggleWebcam()">Webcam</button>
+                            </div>
+                            <input type="file" id="singleInput" hidden accept="image/*">
+                        </div>
+
+                        <!-- Webcam Feed -->
+                        <div id="webcamContainer" class="hidden"
+                            style="position: relative; margin-top: 1rem; background: black; border-radius: 0.5rem; overflow: hidden; height: 300px;">
+                            <video id="webcamVideo" style="width: 100%; height: 100%; object-fit: cover;" autoplay
+                                playsinline muted></video>
+                            <button onclick="app.stopWebcam()"
+                                style="position: absolute; top: 10px; right: 10px; padding: 5px; border-radius: 50%; background: rgba(0,0,0,0.5); border: none; color: white;">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 300px;">
+                        <div class="feature-card" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3
+                                style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                                Results</h3>
+                            <div id="singleResult"
+                                style="flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary);">
+                                <span>No image selected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Batch Mode (Matching Screenshot) -->
+            <div id="view-batch" class="hidden">
+
+                <h2 class="section-title">
+                    <i data-lucide="layers"></i> Model Selection
+                    <span
+                        style="font-size: 0.75rem; background: var(--success); color: white; padding: 2px 8px; border-radius: 99px; margin-left: auto;">Ready</span>
+                </h2>
+
+                <div class="card-grid">
+                    <!-- Cards -->
+                    <div class="feature-card active" onclick="app.selectModel('mobilenet')" style="cursor: pointer;">
+                        <div
+                            style="background: rgba(59, 130, 246, 0.1); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="zap" style="color: var(--accent);"></i>
+                        </div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">MobileNet</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Fast & Lightweight</div>
+                        <div
+                            style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">
+                            ~8MB • Real-time</div>
+                    </div>
+
+                    <div class="feature-card" onclick="app.selectModel('resnet50')" style="cursor: pointer;">
+                        <div
+                            style="background: rgba(168, 85, 247, 0.1); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="scale" style="color: #a855f7;"></i>
+                        </div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">ResNet-50</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Balanced Accuracy</div>
+                        <div
+                            style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">
+                            ~98MB • High Accuracy</div>
+                    </div>
+
+                    <div class="feature-card" onclick="app.selectModel('efficientnet')" style="cursor: pointer;">
+                        <div
+                            style="background: rgba(16, 185, 129, 0.1); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="star" style="color: #10b981;"></i>
+                        </div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">EfficientNet</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">State-of-the-art</div>
+                        <div
+                            style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">
+                            ~20MB • Best Quality</div>
+                    </div>
+
+                    <div class="feature-card" onclick="app.selectModel('inceptionv3')" style="cursor: pointer;">
+                        <div
+                            style="background: rgba(249, 115, 22, 0.1); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="box" style="color: #f97316;"></i>
+                        </div>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">InceptionV3</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Multi-scale features</div>
+                        <div
+                            style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">
+                            ~92MB • Robust</div>
+                    </div>
+                </div>
+
+                <!-- Batch Upload UI -->
+                <div class="batch-upload-container" id="batchDropZone">
+                    <i data-lucide="images"
+                        style="width: 64px; height: 64px; color: var(--accent); margin-bottom: 1.5rem;"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Batch Image Classification</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Upload multiple images for batch
+                        processing</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('batchInput').click()">
+                        <i data-lucide="folder-open"></i> Select Multiple Images
+                    </button>
+                    <input type="file" id="batchInput" hidden multiple accept="image/*">
+                </div>
+
+                <!-- Batch Results Table -->
+                <div id="batchResults" class="hidden" style="margin-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>Results <span id="batchCount" style="font-size: 0.875rem; color: var(--text-secondary);">(0
+                                items)</span></h3>
+                        <button class="btn btn-secondary" onclick="app.clearBatch()">Clear</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead
+                                style="background: var(--bg-card); color: var(--text-secondary); font-size: 0.875rem;">
+                                <tr>
+                                    <th style="padding: 1rem;">Image</th>
+                                    <th style="padding: 1rem;">Filename</th>
+                                    <th style="padding: 1rem;">Top Prediction</th>
+                                    <th style="padding: 1rem;">Confidence</th>
+                                    <th style="padding: 1rem;">Inference Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchTableBody" style="border-top: 1px solid var(--border);">
+                                <!-- Rows will inject here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- View: Train (New) -->
+            <div id="view-train" class="hidden">
+                <h2 class="section-title">
+                    <i data-lucide="dumbbell"></i> Train Custom Model
+                </h2>
+
+                <div class="grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <div>
+                        <div class="feature-card">
+                            <h3 style="margin-bottom: 1rem;">1. Dataset</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                                Upload a CSV file (label, pixel1...pixel784) or use the default MNIST handwriting
+                                dataset.
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <button class="btn btn-secondary"
+                                    onclick="document.getElementById('trainCsvInput').click()">
+                                    <i data-lucide="upload"></i> Upload CSV
+                                </button>
+                                <button class="btn btn-primary" onclick="app.loadMNIST()">
+                                    <i data-lucide="database"></i> Load Default MNIST
+                                </button>
+                                <input type="file" id="trainCsvInput" hidden accept=".csv">
+                            </div>
+                            <div id="datasetStatus"
+                                style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                Status: Waiting for data...
+                            </div>
+                        </div>
+
+                        <div class="feature-card" style="margin-top: 1rem;">
+                            <h3 style="margin-bottom: 1rem;">2. Configuration</h3>
+                            <label style="display: block; font-size: 0.875rem; margin-bottom: 0.5rem;">Epochs: <span
+                                    id="epochValue">5</span></label>
+                            <input type="range" min="1" max="20" value="5"
+                                oninput="document.getElementById('epochValue').innerText = this.value" id="trainEpochs">
+
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;"
+                                onclick="app.startTraining()" id="btnTrain" disabled>
+                                Start Training
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="feature-card" style="height: 100%;">
+                            <h3 style="margin-bottom: 1rem;">Training Progress</h3>
+
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <div
+                                    style="flex: 1; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Loss</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="statLoss">-</div>
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; text-align: center;">
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">Accuracy</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="statAcc">-</div>
+                                </div>
+                            </div>
+
+                            <div style="height: 300px;">
+                                <canvas id="chartTraining"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- View: Explained/Grad-CAM -->
+            <div id="view-layers" class="hidden">
+                <h2 class="section-title">
+                    <i data-lucide="scan-line"></i> Model Explainability (Grad-CAM)
+                </h2>
+                <div class="feature-card" style="text-align: center; padding: 3rem;">
+                    <div style="display: inline-block; position: relative;">
+                        <!-- Canvas for GradCAM overlay -->
+                        <canvas id="gradCamCanvas" width="224" height="224"
+                            style="border-radius: 0.5rem; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></canvas>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                            Grad-CAM creates a heatmap highlighting the regions of the image that led to the prediction.
+                        </p>
+                        <button class="btn btn-primary" onclick="app.runGradCam()">
+                            <i data-lucide="wand-2"></i> Generate Heatmap
+                        </button>
+                    </div>
+
+                    <div
+                        style="margin-top: 2rem; text-align: left; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem;">
+                        <h4>How it works</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                            We compute the gradient of the winning class score with respect to the feature maps of the
+                            last convolutional layer. These gradients tell us how important each feature map is. We
+                            weight the maps and generate a heatmap.
+                            <br>
+                            <em>Note: This requires the custom trained model or compatible layer access.</em>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            &copy; 2025 CNN Vision. All rights reserved. | Ummay Maimona Chaman
+        </footer>
+    </div>
+
+    <!-- Script -->
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
