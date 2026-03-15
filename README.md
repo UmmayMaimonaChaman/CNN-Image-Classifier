@@ -1,4 +1,12 @@
 # 🧠 CNN Vision 🚀  
+![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20CSS3%20%7C%20JavaScript-E34F26?style=flat-square)
+![Machine Learning](https://img.shields.io/badge/Machine%20Learning-TensorFlow.js-FF6F00?style=flat-square&logo=tensorflow)
+![Deep Learning](https://img.shields.io/badge/Deep%20Learning-CNN-blue?style=flat-square)
+![Visualization](https://img.shields.io/badge/Visualization-Chart.js-green?style=flat-square)
+![Explainability](https://img.shields.io/badge/Explainability-Grad--CAM-purple?style=flat-square)
+![Deployment](https://img.shields.io/badge/Deployment-GitHub%20Pages-black?style=flat-square)
+![Privacy](https://img.shields.io/badge/Processing-Client%20Side-success?style=flat-square)
+
 **A Professional In-Browser Deep Learning Workbench**
 
 CNN Vision is an interactive, browser-based Deep Learning playground built with **TensorFlow.js**, designed to demonstrate **Computer Vision, CNN training, inference, and explainability** — all without leaving your browser.
